@@ -150,7 +150,7 @@ func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params h
 		hh.Error(w, err)
 		return
 	}
-	if len(reqData.Nameservers) < 4 || len(reqData.Nameservers) > 10 {
+	if len(reqData.Nameservers) < 3 || len(reqData.Nameservers) > 10 {
 		// TODO: log it
 		hh.JSON(w, 400, struct{}{})
 		return
