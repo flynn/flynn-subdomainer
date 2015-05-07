@@ -1,0 +1,91 @@
+{
+	"ImportPath": "github.com/flynn/subdomainer",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/awslabs/aws-sdk-go/aws",
+			"Rev": "295e08b503c4ee9fbcdc9aa1aa06966a16364e5a"
+		},
+		{
+			"ImportPath": "github.com/awslabs/aws-sdk-go/gen/endpoints",
+			"Rev": "295e08b503c4ee9fbcdc9aa1aa06966a16364e5a"
+		},
+		{
+			"ImportPath": "github.com/awslabs/aws-sdk-go/gen/route53",
+			"Rev": "295e08b503c4ee9fbcdc9aa1aa06966a16364e5a"
+		},
+		{
+			"ImportPath": "github.com/flynn/flynn/pkg/cors",
+			"Comment": "v20150224.0",
+			"Rev": "533dd8221c7e4b80f491e9b4ac0ff1349c9908a1"
+		},
+		{
+			"ImportPath": "github.com/flynn/flynn/pkg/ctxhelper",
+			"Comment": "v20150224.0",
+			"Rev": "533dd8221c7e4b80f491e9b4ac0ff1349c9908a1"
+		},
+		{
+			"ImportPath": "github.com/flynn/flynn/pkg/httphelper",
+			"Comment": "v20150224.0",
+			"Rev": "533dd8221c7e4b80f491e9b4ac0ff1349c9908a1"
+		},
+		{
+			"ImportPath": "github.com/flynn/flynn/pkg/random",
+			"Comment": "v20150224.0",
+			"Rev": "533dd8221c7e4b80f491e9b4ac0ff1349c9908a1"
+		},
+		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Rev": "b55664b9e92004aebb7f19a19a9d06271f3a41fc"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-28-g72d960f",
+			"Rev": "72d960fe96ac86dfd376b0de7ca81c0334838d0b"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Rev": "043ae16291351db8465272edf465c9f388161627"
+		},
+		{
+			"ImportPath": "github.com/speps/go-hashids",
+			"Rev": "7cef70747157a6339dc0fb179fe5c8408db35b61"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
+		},
+		{
+			"ImportPath": "github.com/wadey/cryptorand",
+			"Rev": "f71da62b90e6a6df720e69d4607dcfd10443c75a"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/nacl/secretbox",
+			"Comment": "null-233",
+			"Rev": "8fec09c61d5d66f460d227fd1df3473d7e015bc6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/poly1305",
+			"Comment": "null-233",
+			"Rev": "8fec09c61d5d66f460d227fd1df3473d7e015bc6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/salsa20/salsa",
+			"Comment": "null-233",
+			"Rev": "8fec09c61d5d66f460d227fd1df3473d7e015bc6"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "9dd48c277bcb2bb2cc3eb6a6368a486a567d3562"
+		},
+		{
+			"ImportPath": "gopkg.in/inconshreveable/log15.v2",
+			"Comment": "v2.7",
+			"Rev": "7cf5571b3b32a7c7b5605dc5ed8ad8fdbb2135f0"
+		},
+		{
+			"ImportPath": "gopkg.in/macaroon.v1",
+			"Rev": "ab3940c6c16510a850e1c2dd628b919f0f3f1464"
+		}
+	]
+}
