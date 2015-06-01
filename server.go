@@ -140,7 +140,7 @@ type ProvisionReq struct {
 	Nameservers []string `json:"nameservers"`
 }
 
-var nameserverPattern = regexp.MustCompile(`\Ans-?\d+\.((awsdns-\d+(\.[a-z]{1,3}){1,2})|(digitalocean\.com))\z`)
+var nameserverPattern = regexp.MustCompile(`\Ans\d*-?\d+\.((awsdns-\d+(\.[a-z]{1,3}){1,2})|(digitalocean\.com)|(azure-dns\.com))\z`)
 
 func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	domain := params.ByName("id")
