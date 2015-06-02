@@ -199,7 +199,7 @@ func (a *API) provisionDomainNameServers(w http.ResponseWriter, reqData Provisio
 			Changes: []route53.Change{{
 				Action: aws.String(route53.ChangeActionCreate),
 				ResourceRecordSet: &route53.ResourceRecordSet{
-					Name:            aws.String(domain + "."),
+					Name:            aws.String(reqData.Domain + "."),
 					TTL:             aws.Long(3600),
 					Type:            aws.String(route53.RRTypeNs),
 					ResourceRecords: records,
@@ -214,7 +214,7 @@ func (a *API) provisionDomainNameServers(w http.ResponseWriter, reqData Provisio
 	}
 
 	const updateChange = "UPDATE domains SET external_change_id = $2 WHERE domain = $1"
-	if _, err := a.db.Exec(updateChange, domain, dnsRes.ChangeInfo.ID); err != nil {
+	if _, err := a.db.Exec(updateChange, reqData.Domain, dnsRes.ChangeInfo.ID); err != nil {
 		hh.Error(w, err)
 		return
 	}
@@ -264,7 +264,7 @@ func (a *API) provisionDomainAddresses(w http.ResponseWriter, reqData ProvisionR
 				{
 					Action: aws.String(route53.ChangeActionCreate),
 					ResourceRecordSet: &route53.ResourceRecordSet{
-						Name:            aws.String(fmt.Sprintf("%s.", domain)),
+						Name:            aws.String(fmt.Sprintf("%s.", reqData.Domain)),
 						TTL:             aws.Long(3600),
 						Type:            aws.String(route53.RRTypeA),
 						ResourceRecords: records,
@@ -273,7 +273,7 @@ func (a *API) provisionDomainAddresses(w http.ResponseWriter, reqData ProvisionR
 				{
 					Action: aws.String(route53.ChangeActionCreate),
 					ResourceRecordSet: &route53.ResourceRecordSet{
-						Name:            aws.String(fmt.Sprintf("*.%s.", domain)),
+						Name:            aws.String(fmt.Sprintf("*.%s.", reqData.Domain)),
 						TTL:             aws.Long(3600),
 						Type:            aws.String(route53.RRTypeA),
 						ResourceRecords: records,
@@ -289,7 +289,7 @@ func (a *API) provisionDomainAddresses(w http.ResponseWriter, reqData ProvisionR
 	}
 
 	const updateChange = "UPDATE domains SET external_change_id = $2 WHERE domain = $1"
-	if _, err := a.db.Exec(updateChange, domain, dnsRes.ChangeInfo.ID); err != nil {
+	if _, err := a.db.Exec(updateChange, reqData.Domain, dnsRes.ChangeInfo.ID); err != nil {
 		hh.Error(w, err)
 		return
 	}
