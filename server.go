@@ -137,10 +137,10 @@ func (a *API) AuthHandler(h httprouter.Handle) httprouter.Handle {
 }
 
 type ProvisionReq struct {
-	Nameservers []string `json:"nameservers"`
+	Domain      string   `json:"-"`
+	IPAddresses []string `json:"ip_addresses,omitempty"`
+	Nameservers []string `json:"nameservers,omitempty"`
 }
-
-var nameserverPattern = regexp.MustCompile(`\Ans\d*-?\d+\.((awsdns-\d+(\.[a-z]{1,3}){1,2})|(digitalocean\.com)|(azure-dns\.(com|info|org|net)))\z`)
 
 func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	domain := params.ByName("id")
@@ -150,6 +150,18 @@ func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params h
 		hh.Error(w, err)
 		return
 	}
+	reqData.Domain = domain
+
+	if len(reqData.Nameservers) > 0 {
+		a.provisionDomainNameServers(w, reqData)
+	} else {
+		a.provisionDomainAddresses(w, reqData)
+	}
+}
+
+var nameserverPattern = regexp.MustCompile(`\Ans\d*-?\d+\.((awsdns-\d+(\.[a-z]{1,3}){1,2})|(digitalocean\.com)|(azure-dns\.(com|info|org|net)))\z`)
+
+func (a *API) provisionDomainNameServers(w http.ResponseWriter, reqData ProvisionReq) {
 	if len(reqData.Nameservers) < 3 || len(reqData.Nameservers) > 10 {
 		// TODO: log it
 		hh.JSON(w, 400, struct{}{})
@@ -164,8 +176,8 @@ func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params h
 	}
 
 	nsData, _ := json.Marshal(reqData.Nameservers)
-	const nsUpdate = "UPDATE domains SET nameservers = $2 WHERE domain = $1 AND nameservers IS NULL"
-	updateRes, err := a.db.Exec(nsUpdate, domain, nsData)
+	const nsUpdate = "UPDATE domains SET nameservers = $2 WHERE domain = $1 AND nameservers IS NULL AND ip_addresses IS NULL"
+	updateRes, err := a.db.Exec(nsUpdate, reqData.Domain, nsData)
 	if err != nil {
 		hh.Error(w, err)
 		return
@@ -193,6 +205,81 @@ func (a *API) ProvisionDomain(w http.ResponseWriter, req *http.Request, params h
 					ResourceRecords: records,
 				},
 			}},
+		},
+	}
+	dnsRes, err := a.r53.ChangeResourceRecordSets(dnsReq)
+	if err != nil {
+		hh.Error(w, err)
+		return
+	}
+
+	const updateChange = "UPDATE domains SET external_change_id = $2 WHERE domain = $1"
+	if _, err := a.db.Exec(updateChange, domain, dnsRes.ChangeInfo.ID); err != nil {
+		hh.Error(w, err)
+		return
+	}
+
+	hh.JSON(w, 200, struct{}{})
+}
+
+func (a *API) provisionDomainAddresses(w http.ResponseWriter, reqData ProvisionReq) {
+	if len(reqData.IPAddresses) < 1 {
+		hh.Error(w, hh.JSONError{
+			Code:    hh.ValidationError,
+			Message: "Must provide name servers or IPv4 addresses",
+		})
+		return
+	}
+	for _, a := range reqData.IPAddresses {
+		if net.ParseIP(a).To4() == nil {
+			hh.Error(w, hh.JSONError{
+				Code:    hh.ValidationError,
+				Message: "Invalid IPv4 addresses provided",
+			})
+			return
+		}
+	}
+
+	ipData, _ := json.Marshal(reqData.IPAddresses)
+	const ipUpdate = "UPDATE domains SET ip_addresses = $2 WHERE domain = $1 AND ip_addresses IS NULL AND nameservers IS NULL"
+	updateRes, err := a.db.Exec(ipUpdate, reqData.Domain, ipData)
+	if err != nil {
+		hh.Error(w, err)
+		return
+	}
+	if n, _ := updateRes.RowsAffected(); n != 1 {
+		hh.JSON(w, 400, struct{}{})
+		return
+	}
+
+	records := make([]route53.ResourceRecord, len(reqData.IPAddresses))
+	for i, ip := range reqData.IPAddresses {
+		records[i].Value = aws.String(ip)
+	}
+
+	dnsReq := &route53.ChangeResourceRecordSetsRequest{
+		HostedZoneID: a.zoneID,
+		ChangeBatch: &route53.ChangeBatch{
+			Changes: []route53.Change{
+				{
+					Action: aws.String(route53.ChangeActionCreate),
+					ResourceRecordSet: &route53.ResourceRecordSet{
+						Name:            aws.String(fmt.Sprintf("%s.", domain)),
+						TTL:             aws.Long(3600),
+						Type:            aws.String(route53.RRTypeA),
+						ResourceRecords: records,
+					},
+				},
+				{
+					Action: aws.String(route53.ChangeActionCreate),
+					ResourceRecordSet: &route53.ResourceRecordSet{
+						Name:            aws.String(fmt.Sprintf("*.%s.", domain)),
+						TTL:             aws.Long(3600),
+						Type:            aws.String(route53.RRTypeA),
+						ResourceRecords: records,
+					},
+				},
+			},
 		},
 	}
 	dnsRes, err := a.r53.ChangeResourceRecordSets(dnsReq)
