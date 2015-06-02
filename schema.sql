@@ -15,6 +15,7 @@ CREATE TABLE domains (
   creator_ip text NOT NULL,
   access_key bytea NOT NULL,
   nameservers json,
+  ip_addresses json,
   external_change_id text,
   external_change_applied BOOLEAN NOT NULL default false,
   created_at timestamptz NOT NULL DEFAULT now(),
